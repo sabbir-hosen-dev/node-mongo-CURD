@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mongo DB CURD</title>
+  </head>
+  <body>
+    <form action="/addUser" method="post">
+      <input type="text" name="name" id="name" required placeholder="name" />
+      <input type="text" name="class" id="class" required placeholder="class" />
+      <input type="text" name="gpa" required id="gpa" placeholder="gpa" />
+      <button type="submit">Submit</button>
+    </form>
+    <div id="users"></div>
+    <script>
+      fetch("/users")
+        .then((res) => res.json())
+        .then((data) => {
+          const div = document.getElementById("users");
+          data.forEach(e => {
+            const user = `
+            <h3>${e.name} - ${e.class} - ${e.gpa}</h3>  
+            <button onclick=(handleDelete('${e._id}')) >delete</button>`
+            div.innerHTML += user
+          });
+        });
+
+        const handleDelete = (id) => {
+          fetch("/delete")
+          .then(res => res.json(id))
+        }
+    </script>
+  </body>
+</html>

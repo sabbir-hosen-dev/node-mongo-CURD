@@ -13,23 +13,70 @@
       <button type="submit">Submit</button>
     </form>
     <div id="users"></div>
-    <script>
-      fetch("/users")
-        .then((res) => res.json())
-        .then((data) => {
-          const div = document.getElementById("users");
-          data.forEach(e => {
-            const user = `
-            <h3>${e.name} - ${e.class} - ${e.gpa}</h3>  
-            <button onclick=(handleDelete('${e._id}')) >delete</button>`
-            div.innerHTML += user
-          });
-        });
+    <div id="input"></div>
 
-        const handleDelete = (id) => {
-          fetch("/delete")
-          .then(res => res.json(id))
-        }
+    <script>
+
+
+      const handChange = (id) => {
+        const name = document.getElementById("Cname").value;
+        const clas = document.getElementById("Cclass").value;
+        const gpa= document.getElementById("Cgpa").value;
+        const data = {id,name,clas,gpa}
+
+        fetch("/update", {
+          method: "PATCH",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => console.log(res))
+        .catch(err => console.log(err))
+
+      }
+ 
+
+      const handleUpdate = (id) => {
+        const input = document.getElementById("input");
+
+        fetch(`/user/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          input.innerHTML = `
+          <input type="text" name="name" id="Cname" required placeholder="name" value="${data.name}" />
+          <input type="text" name="class" id="Cclass" required placeholder="class" value="${data.class}" />
+          <input type="text" name="gpa" id="Cgpa" required placeholder="gpa" value="${data.gpa}" />
+
+          <button onclick="handChange('${data._id}')">change </change>
+          `
+        })
+        .catch(err => console.log(err))
+
+      }; 
+
+      const handleDelete = (id) => {
+        fetch(`/delete/${id}`, {
+          method: "DELETE",
+        })
+          .then((result) => console.log(result))
+          .catch((err) => console.log(err));
+      };
+
+      const loadData = () => {
+        fetch("/users")
+          .then((res) => res.json())
+          .then((data) => {
+            const div = document.getElementById("users");
+            data.forEach((e) => {
+              const user = `
+            <p>${e.name} - ${e.class} - ${e.gpa} 
+              <button onclick="handleUpdate('${e._id}')"> Update </button>
+            <button onclick="handleDelete('${e._id}')">delete</button> </p> `;
+              div.innerHTML += user;
+            });
+          });
+      };
+      loadData();
     </script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const fs = require("fs");
 const bodyParser = require("body-parser");
 
@@ -34,6 +34,33 @@ client
     process.exit(1);
   });
 
+
+  app.patch("/update",(req,res) => {
+    console.log(req.body)
+    client.connect()
+      .then(() => {
+        collection.updateOne({_id : new ObjectId(req.body.id)},
+        { $set: {name: req.body.name, class: req.body.clas, gpa:req.body.gpa}}, 
+      )
+      .then(res => {
+        console.log(res)
+      })
+      .catch(err => console.log(err))
+      })
+  })
+
+  app.get("/user/:id",(req,res) => {
+    const userId = req.params
+    client.connect()
+    .then(() => {
+      collection.find({_id : new ObjectId(userId)})
+      .toArray()
+      .then(doc => {
+        res.send(doc[0])
+      })
+    })
+  })
+
 app.get("/users", (req, res) => {
   client.connect()
     .then(() => {
@@ -44,7 +71,25 @@ app.get("/users", (req, res) => {
         })
     })
 
-})
+})  
+
+app.delete("/delete/:id", (req, res) => {
+  // Connect to MongoDB and perform delete operation
+  client.connect()
+      .then(() => {
+
+          // Perform delete operation
+          return collection.deleteOne({ _id: new ObjectId(req.params.id) });
+      })
+      .then(result => {
+          console.log("Deleted document:", result);
+          res.status(200).send("Document deleted successfully");
+      })
+      .catch(error => {
+          console.error("Error deleting document:", error);
+          res.status(500).send("Error deleting document");
+      });
+});
 
 app.get("/", (req, res) => {
   fs.readFile(__dirname + "/index.html", "utf-8", (err, data) => {
@@ -56,9 +101,6 @@ app.get("/", (req, res) => {
   });
 });
 
-app.delete("/delete", (req,res) => {
-  console.log(req.props)
-})
 
 app.listen(PORT, () =>
   console.log(`server is running at  http://localhost:${PORT}`)
